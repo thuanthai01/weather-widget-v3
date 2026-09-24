@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Internet: lấy dữ liệu thời tiết thực tế -->
+    <!-- Internet để lấy dữ liệu thời tiết thực tế -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Vị trí: lấy vị trí thực tế của điện thoại -->
+    <!-- Quyền lấy vị trí điện thoại -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Cho phép nhận sự kiện khi điện thoại khởi động -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +18,19 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
-        <!-- Widget -->
+        <!-- Ứng dụng chính: xin quyền vị trí -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <!-- Widget HyperOS Weather -->
         <receiver
             android:name=".HyperOSWeatherWidgetReceiver"
             android:exported="true">
@@ -27,7 +42,13 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/hyperos_weather_widget_info" />
+
         </receiver>
+
+        <!-- Nhận lệnh cập nhật thời tiết -->
+        <receiver
+            android:name=".WeatherUpdateReceiver"
+            android:exported="false" />
 
     </application>
 
