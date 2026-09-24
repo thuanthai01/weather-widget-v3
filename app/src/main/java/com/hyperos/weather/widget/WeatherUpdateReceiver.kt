@@ -14,14 +14,19 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
         intent: Intent?
     ) {
 
+        val appContext =
+            context.applicationContext
+
         val pendingResult = goAsync()
 
         CoroutineScope(Dispatchers.IO).launch {
 
             try {
 
+                // Lấy vị trí thực tế
+                // và cập nhật dữ liệu thời tiết
                 WeatherUpdateManager.updateWidget(
-                    context.applicationContext
+                    appContext
                 )
 
             } catch (e: Exception) {
@@ -29,6 +34,11 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
                 e.printStackTrace()
 
             } finally {
+
+                // Đặt lịch cho lần cập nhật tiếp theo
+                WeatherScheduler.schedule(
+                    appContext
+                )
 
                 pendingResult.finish()
             }
