@@ -1,0 +1,50 @@
+package com.hyperos.weather.widget
+
+import android.content.Context
+import androidx.glance.appwidget.updateAll
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+object WeatherUpdateManager {
+
+    suspend fun updateWidget(context: Context) {
+
+        withContext(Dispatchers.IO) {
+
+            try {
+
+                val location =
+                    LocationHelper.getCurrentLocation(context)
+                        ?: return@withContext
+
+                val weather =
+                    WeatherRepository.getWeather(
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                    ?: return@withContext
+
+                val locationName =
+                    LocationNameHelper.getLocationName(
+                        context = context,
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+
+                WeatherCache.save(
+                    context = context,
+                    weather = weather.copy(
+                        locationName = locationName
+                    )
+                )
+
+                HyperOSWeatherWidget()
+                    .updateAll(context)
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
+    }
+}
