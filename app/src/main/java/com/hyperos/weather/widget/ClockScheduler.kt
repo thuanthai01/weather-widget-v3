@@ -32,10 +32,10 @@ object ClockScheduler {
                         PendingIntent.FLAG_IMMUTABLE
             )
 
-        // Đặt lần cập nhật tiếp theo đúng đầu phút
         val currentTime =
             System.currentTimeMillis()
 
+        // Đặt lịch vào đầu phút tiếp theo
         val nextMinute =
             ((currentTime / 60000L) + 1) * 60000L
 
@@ -55,5 +55,32 @@ object ClockScheduler {
                 pendingIntent
             )
         }
+    }
+
+    fun cancel(context: Context) {
+
+        val alarmManager =
+            context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+        val intent =
+            Intent(
+                context,
+                ClockUpdateReceiver::class.java
+            )
+
+        val pendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE
+            )
+
+        alarmManager.cancel(pendingIntent)
+
+        pendingIntent.cancel()
     }
 }
