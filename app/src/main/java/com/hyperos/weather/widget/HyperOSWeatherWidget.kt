@@ -2,15 +2,11 @@ package com.hyperos.weather.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.unit.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
@@ -25,6 +21,10 @@ import androidx.glance.layout.defaultWeight
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -36,193 +36,338 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
         id: GlanceId
     ) {
         provideContent {
-            WidgetContent()
+            WidgetContent(context)
         }
     }
 
     @Composable
-    private fun WidgetContent() {
+    private fun WidgetContent(context: Context) {
 
-        // Thời gian thực của điện thoại
+        // =========================
+        // THỜI GIAN THỰC TẾ
+        // =========================
+
         val now = Date()
 
         val currentTime =
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
+            SimpleDateFormat(
+                "HH:mm",
+                Locale.getDefault()
+            ).format(now)
 
         val currentDate =
-            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(now)
+            SimpleDateFormat(
+                "dd/MM/yyyy",
+                Locale.getDefault()
+            ).format(now)
 
         val dayName =
-            SimpleDateFormat("EEEE", Locale("vi", "VN")).format(now)
+            SimpleDateFormat(
+                "EEEE",
+                Locale("vi", "VN")
+            ).format(now)
+
+        // =========================
+        // ÂM LỊCH
+        // =========================
+
+        val lunarDate =
+            LunarCalendarUtils.today()
+
+        // =========================
+        // THỜI TIẾT ĐÃ LƯU
+        // =========================
+
+        val weather =
+            WeatherCache.load(context)
+
+        val currentTemperature =
+            weather?.currentTemperature
+                ?.let { "${it.toInt()}°C" }
+                ?: "--°C"
+
+        val weatherCode =
+            weather?.currentWeatherCode ?: -1
+
+        val weatherIcon =
+            if (weatherCode >= 0) {
+                WeatherUtils.getIcon(weatherCode)
+            } else {
+                "🌤️"
+            }
+
+        val weatherDescription =
+            if (weatherCode >= 0) {
+                WeatherUtils.getDescription(weatherCode)
+            } else {
+                "Đang cập nhật"
+            }
+
+        val locationName =
+            weather?.locationName
+                ?.takeIf { it.isNotBlank() }
+                ?: "Vị trí hiện tại"
+
+        // =========================
+        // DỰ BÁO 3 NGÀY
+        // =========================
+
+        val forecast =
+            weather?.forecast
+                ?.drop(1)
+                ?.take(3)
+                ?: emptyList()
 
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .padding(12.dp)
-                .background(Color(0x33FFFFFF))
+                .background(
+                    ColorProvider(
+                        Color(0x33FFFFFF)
+                    )
+                )
         ) {
 
-            // ============================================================
+            // =========================
             // HÀNG TRÊN
-            // ============================================================
+            // =========================
+
             Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = GlanceModifier
+                    .fillMaxWidth(),
+                verticalAlignment =
+                    Alignment.CenterVertically
             ) {
 
-                // Phần đồng hồ + ngày
                 Row(
                     modifier = GlanceModifier
                         .defaultWeight(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment =
+                        Alignment.CenterVertically
                 ) {
 
+                    // ĐỒNG HỒ
                     Text(
                         text = currentTime,
                         style = TextStyle(
                             fontSize = 36.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = ColorProvider(Color.White)
+                            fontWeight =
+                                FontWeight.Normal,
+                            color = ColorProvider(
+                                Color.White
+                            )
                         )
                     )
 
                     Spacer(
-                        modifier = GlanceModifier.width(8.dp)
+                        modifier =
+                            GlanceModifier.width(8.dp)
                     )
 
                     Column {
 
+                        // THỨ + NGÀY
                         Text(
-                            text = "$dayName $currentDate",
+                            text =
+                                "$dayName $currentDate",
                             style = TextStyle(
                                 fontSize = 11.sp,
-                                color = ColorProvider(Color.White)
+                                color =
+                                    ColorProvider(
+                                        Color.White
+                                    )
                             )
                         )
 
-                        // Tạm giữ giao diện cũ.
-                        // Sẽ thay bằng âm lịch thực tế ở bước tiếp theo.
+                        // ÂM LỊCH
                         Text(
-                            text = "Âm lịch: 28/03",
+                            text =
+                                "Âm lịch: ${lunarDate.day}/${lunarDate.month}",
                             style = TextStyle(
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ColorProvider(
-                                    Color(0xFFFDE047)
-                                )
+                                fontWeight =
+                                    FontWeight.Bold,
+                                color =
+                                    ColorProvider(
+                                        Color(0xFFFDE047)
+                                    )
                             )
                         )
 
+                        // CAN CHI
                         Text(
-                            text = "(Ất Tỵ)",
+                            text =
+                                "(${lunarDate.canChiYear})",
                             style = TextStyle(
                                 fontSize = 10.sp,
-                                color = ColorProvider(
-                                    Color(0xFFFEF08A)
-                                )
+                                color =
+                                    ColorProvider(
+                                        Color(0xFFFEF08A)
+                                    )
                             )
                         )
                     }
                 }
 
-                // Đường ngăn cách dọc
+                // ĐƯỜNG KẺ DỌC
                 Spacer(
                     modifier = GlanceModifier
                         .width(1.dp)
                         .fillMaxHeight()
-                        .background(Color(0x33FFFFFF))
+                        .background(
+                            ColorProvider(
+                                Color(0x33FFFFFF)
+                            )
+                        )
                 )
 
-                // Phần thời tiết
+                // =========================
+                // THỜI TIẾT HIỆN TẠI
+                // =========================
+
                 Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = GlanceModifier
-                        .padding(start = 8.dp)
+                    horizontalAlignment =
+                        Alignment.Start,
+                    modifier =
+                        GlanceModifier.padding(
+                            start = 8.dp
+                        )
                 ) {
 
-                    // Tạm giữ dữ liệu cũ.
-                    // Sẽ thay bằng dữ liệu thời tiết thực tế ở bước tiếp theo.
-                    Text(
-                        text = "26°C",
-                        style = TextStyle(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = ColorProvider(Color.White)
+                    Row(
+                        verticalAlignment =
+                            Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text = weatherIcon,
+                            style = TextStyle(
+                                fontSize = 20.sp
+                            )
                         )
-                    )
+
+                        Spacer(
+                            modifier =
+                                GlanceModifier.width(
+                                    4.dp
+                                )
+                        )
+
+                        Text(
+                            text = currentTemperature,
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                fontWeight =
+                                    FontWeight.Normal,
+                                color =
+                                    ColorProvider(
+                                        Color.White
+                                    )
+                            )
+                        )
+                    }
 
                     Text(
-                        text = "📍 Hà Nội",
+                        text = "📍 $locationName",
                         style = TextStyle(
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = ColorProvider(Color.White)
+                            fontWeight =
+                                FontWeight.Bold,
+                            color =
+                                ColorProvider(
+                                    Color.White
+                                )
                         )
                     )
 
                     Text(
-                        text = "Có mây",
+                        text = weatherDescription,
                         style = TextStyle(
                             fontSize = 10.sp,
-                            color = ColorProvider(
-                                Color(0xCCFFFFFF)
-                            )
+                            color =
+                                ColorProvider(
+                                    Color(0xCCFFFFFF)
+                                )
                         )
                     )
                 }
             }
 
-            // ============================================================
-            // ĐƯỜNG NGĂN CÁCH NGANG
-            // ============================================================
+            // =========================
+            // ĐƯỜNG KẺ NGANG
+            // =========================
+
             Spacer(
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Color(0x33FFFFFF))
+                    .background(
+                        ColorProvider(
+                            Color(0x33FFFFFF)
+                        )
+                    )
             )
 
-            // ============================================================
+            // =========================
             // DỰ BÁO 3 NGÀY
-            // ============================================================
+            // =========================
+
             Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    GlanceModifier.fillMaxWidth(),
+                verticalAlignment =
+                    Alignment.CenterVertically
             ) {
 
                 Spacer(
-                    modifier = GlanceModifier.defaultWeight()
+                    modifier =
+                        GlanceModifier.defaultWeight()
                 )
 
-                ForecastColumn(
-                    "Thứ 7",
-                    "24° / 32°",
-                    "Có mây"
-                )
+                for (item in forecast) {
 
-                Spacer(
-                    modifier = GlanceModifier.defaultWeight()
-                )
+                    ForecastColumn(
+                        day = formatForecastDay(
+                            item.date
+                        ),
+                        temp =
+                            "${item.minTemperature.toInt()}° / " +
+                            "${item.maxTemperature.toInt()}°",
+                        icon =
+                            WeatherUtils.getIcon(
+                                item.weatherCode
+                            ),
+                        desc =
+                            WeatherUtils.getDescription(
+                                item.weatherCode
+                            )
+                    )
 
-                ForecastColumn(
-                    "CN",
-                    "23° / 30°",
-                    "Mưa nhẹ"
-                )
+                    Spacer(
+                        modifier =
+                            GlanceModifier.defaultWeight()
+                    )
+                }
 
-                Spacer(
-                    modifier = GlanceModifier.defaultWeight()
-                )
+                // Nếu API chưa có dữ liệu,
+                // vẫn giữ bố cục 3 cột.
+                repeat(
+                    3 - forecast.size
+                ) {
 
-                ForecastColumn(
-                    "Thứ 2",
-                    "22° / 31°",
-                    "Có mây"
-                )
+                    ForecastColumn(
+                        day = "--",
+                        temp = "--° / --°",
+                        icon = "🌤️",
+                        desc = "Đang cập nhật"
+                    )
 
-                Spacer(
-                    modifier = GlanceModifier.defaultWeight()
-                )
+                    Spacer(
+                        modifier =
+                            GlanceModifier.defaultWeight()
+                    )
+                }
             }
         }
     }
@@ -231,19 +376,32 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
     private fun ForecastColumn(
         day: String,
         temp: String,
+        icon: String,
         desc: String
     ) {
 
         Column(
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment =
+                Alignment.Start
         ) {
 
             Text(
                 text = day,
                 style = TextStyle(
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorProvider(Color.White)
+                    fontWeight =
+                        FontWeight.Bold,
+                    color =
+                        ColorProvider(
+                            Color.White
+                        )
+                )
+            )
+
+            Text(
+                text = icon,
+                style = TextStyle(
+                    fontSize = 14.sp
                 )
             )
 
@@ -251,7 +409,10 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
                 text = temp,
                 style = TextStyle(
                     fontSize = 10.sp,
-                    color = ColorProvider(Color.White)
+                    color =
+                        ColorProvider(
+                            Color.White
+                        )
                 )
             )
 
@@ -259,11 +420,44 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
                 text = desc,
                 style = TextStyle(
                     fontSize = 9.sp,
-                    color = ColorProvider(
-                        Color(0xAAFFFFFF)
-                    )
+                    color =
+                        ColorProvider(
+                            Color(0xAAFFFFFF)
+                        )
                 )
             )
+        }
+    }
+
+    private fun formatForecastDay(
+        dateString: String
+    ): String {
+
+        return try {
+
+            val inputFormat =
+                SimpleDateFormat(
+                    "yyyy-MM-dd",
+                    Locale.US
+                )
+
+            val outputFormat =
+                SimpleDateFormat(
+                    "EEE",
+                    Locale("vi", "VN")
+                )
+
+            val date =
+                inputFormat.parse(dateString)
+
+            if (date != null) {
+                outputFormat.format(date)
+            } else {
+                "--"
+            }
+
+        } catch (e: Exception) {
+            "--"
         }
     }
 }
