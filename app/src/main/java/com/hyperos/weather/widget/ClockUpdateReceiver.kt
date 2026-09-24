@@ -14,15 +14,31 @@ class ClockUpdateReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent?
     ) {
+
+        val appContext =
+            context.applicationContext
+
         val pendingResult = goAsync()
 
         CoroutineScope(Dispatchers.Default).launch {
+
             try {
+
+                // Cập nhật nội dung widget
                 HyperOSWeatherWidget()
-                    .updateAll(context.applicationContext)
+                    .updateAll(appContext)
+
             } catch (e: Exception) {
+
                 e.printStackTrace()
+
             } finally {
+
+                // Đặt lịch cho phút tiếp theo
+                ClockScheduler.schedule(
+                    appContext
+                )
+
                 pendingResult.finish()
             }
         }
