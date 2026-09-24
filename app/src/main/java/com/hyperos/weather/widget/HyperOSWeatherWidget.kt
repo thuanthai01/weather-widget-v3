@@ -1,4 +1,3 @@
-
 package com.hyperos.weather.widget
 
 import android.content.Context
@@ -32,7 +31,10 @@ import java.util.Locale
 
 class HyperOSWeatherWidget : GlanceAppWidget() {
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(
+        context: Context,
+        id: GlanceId
+    ) {
         provideContent {
             WidgetContent()
         }
@@ -40,9 +42,18 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
 
     @Composable
     private fun WidgetContent() {
-        val currentTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-        val currentDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-        val dayName = SimpleDateFormat("EEEE", Locale("vi", "VN")).format(Date())
+
+        // Thời gian thực của điện thoại
+        val now = Date()
+
+        val currentTime =
+            SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
+
+        val currentDate =
+            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(now)
+
+        val dayName =
+            SimpleDateFormat("EEEE", Locale("vi", "VN")).format(now)
 
         Column(
             modifier = GlanceModifier
@@ -50,49 +61,71 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
                 .padding(12.dp)
                 .background(Color(0x33FFFFFF))
         ) {
+
+            // ============================================================
+            // HÀNG TRÊN
+            // ============================================================
             Row(
-                modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
+                modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                // Phần đồng hồ + ngày
                 Row(
-                    modifier = GlanceModifier.defaultWeight(),
+                    modifier = GlanceModifier
+                        .defaultWeight(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     Text(
                         text = currentTime,
                         style = TextStyle(
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Normal,
-                            color = ColorProvider(day = Color.White, night = Color.White)
+                            color = ColorProvider(Color.White)
                         )
                     )
-                    Spacer(modifier = GlanceModifier.width(8.dp))
+
+                    Spacer(
+                        modifier = GlanceModifier.width(8.dp)
+                    )
+
                     Column {
+
                         Text(
                             text = "$dayName $currentDate",
                             style = TextStyle(
                                 fontSize = 11.sp,
-                                color = ColorProvider(day = Color.White, night = Color.White)
+                                color = ColorProvider(Color.White)
                             )
                         )
+
+                        // Tạm giữ giao diện cũ.
+                        // Sẽ thay bằng âm lịch thực tế ở bước tiếp theo.
                         Text(
                             text = "Âm lịch: 28/03",
                             style = TextStyle(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ColorProvider(day = Color(0xFFFDE047), night = Color(0xFFFDE047))
+                                color = ColorProvider(
+                                    Color(0xFFFDE047)
+                                )
                             )
                         )
+
                         Text(
                             text = "(Ất Tỵ)",
                             style = TextStyle(
                                 fontSize = 10.sp,
-                                color = ColorProvider(day = Color(0xFFFEF08A), night = Color(0xFFFEF08A))
+                                color = ColorProvider(
+                                    Color(0xFFFEF08A)
+                                )
                             )
                         )
                     }
                 }
 
+                // Đường ngăn cách dọc
                 Spacer(
                     modifier = GlanceModifier
                         .width(1.dp)
@@ -100,36 +133,48 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
                         .background(Color(0x33FFFFFF))
                 )
 
+                // Phần thời tiết
                 Column(
                     horizontalAlignment = Alignment.Start,
-                    modifier = GlanceModifier.padding(start = 8.dp)
+                    modifier = GlanceModifier
+                        .padding(start = 8.dp)
                 ) {
+
+                    // Tạm giữ dữ liệu cũ.
+                    // Sẽ thay bằng dữ liệu thời tiết thực tế ở bước tiếp theo.
                     Text(
                         text = "26°C",
                         style = TextStyle(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Normal,
-                            color = ColorProvider(day = Color.White, night = Color.White)
+                            color = ColorProvider(Color.White)
                         )
                     )
+
                     Text(
                         text = "📍 Hà Nội",
                         style = TextStyle(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorProvider(day = Color.White, night = Color.White)
+                            color = ColorProvider(Color.White)
                         )
                     )
+
                     Text(
                         text = "Có mây",
                         style = TextStyle(
                             fontSize = 10.sp,
-                            color = ColorProvider(day = Color(0xCCFFFFFF), night = Color(0xCCFFFFFF))
+                            color = ColorProvider(
+                                Color(0xCCFFFFFF)
+                            )
                         )
                     )
                 }
             }
 
+            // ============================================================
+            // ĐƯỜNG NGĂN CÁCH NGANG
+            // ============================================================
             Spacer(
                 modifier = GlanceModifier
                     .fillMaxWidth()
@@ -137,47 +182,88 @@ class HyperOSWeatherWidget : GlanceAppWidget() {
                     .background(Color(0x33FFFFFF))
             )
 
+            // ============================================================
+            // DỰ BÁO 3 NGÀY
+            // ============================================================
             Row(
-                modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
+                modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                ForecastColumn("Thứ 7", "24° / 32°", "Có mây")
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                ForecastColumn("CN", "23° / 30°", "Mưa nhẹ")
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                ForecastColumn("Thứ 2", "22° / 31°", "Có mây")
-                Spacer(modifier = GlanceModifier.defaultWeight())
+
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
+
+                ForecastColumn(
+                    "Thứ 7",
+                    "24° / 32°",
+                    "Có mây"
+                )
+
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
+
+                ForecastColumn(
+                    "CN",
+                    "23° / 30°",
+                    "Mưa nhẹ"
+                )
+
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
+
+                ForecastColumn(
+                    "Thứ 2",
+                    "22° / 31°",
+                    "Có mây"
+                )
+
+                Spacer(
+                    modifier = GlanceModifier.defaultWeight()
+                )
             }
         }
     }
 
     @Composable
-    private fun ForecastColumn(day: String, temp: String, desc: String) {
-        Column(horizontalAlignment = Alignment.Start) {
+    private fun ForecastColumn(
+        day: String,
+        temp: String,
+        desc: String
+    ) {
+
+        Column(
+            horizontalAlignment = Alignment.Start
+        ) {
+
             Text(
                 text = day,
                 style = TextStyle(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorProvider(day = Color.White, night = Color.White)
+                    color = ColorProvider(Color.White)
                 )
             )
+
             Text(
                 text = temp,
                 style = TextStyle(
                     fontSize = 10.sp,
-                    color = ColorProvider(day = Color.White, night = Color.White)
+                    color = ColorProvider(Color.White)
                 )
             )
+
             Text(
                 text = desc,
                 style = TextStyle(
                     fontSize = 9.sp,
-                    color = ColorProvider(day = Color(0xAAFFFFFF), night = Color(0xAAFFFFFF))
+                    color = ColorProvider(
+                        Color(0xAAFFFFFF)
+                    )
                 )
             )
         }
     }
 }
-                    
