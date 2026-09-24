@@ -15,8 +15,17 @@ class BootReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED
         ) {
 
-            WeatherScheduler.schedule(
+            val appContext =
                 context.applicationContext
+
+            // Khởi động lại lịch cập nhật đồng hồ
+            ClockScheduler.schedule(
+                appContext
+            )
+
+            // Khởi động lại lịch cập nhật thời tiết
+            WeatherScheduler.schedule(
+                appContext
             )
         }
     }
